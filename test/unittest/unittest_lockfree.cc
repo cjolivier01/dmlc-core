@@ -121,7 +121,7 @@ class futex {
   std::atomic<int> lock_val_;
 };
 
-using fast_mutex = fast_mutex;
+using fast_mutex = futex;
 
 #else
 
