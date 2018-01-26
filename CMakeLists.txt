@@ -63,6 +63,7 @@ add_definitions(-D__USE_XOPEN2K8)
 # compile
 if(MSVC)
   add_definitions(-DDMLC_USE_CXX11)
+  add_definitions(-DNOMINMAX=1)
   foreach(flag_var
         CMAKE_CXX_FLAGS CMAKE_CXX_FLAGS_DEBUG CMAKE_CXX_FLAGS_RELEASE
         CMAKE_CXX_FLAGS_MINSIZEREL CMAKE_CXX_FLAGS_RELWITHDEBINFO)
