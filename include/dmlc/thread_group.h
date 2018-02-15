@@ -374,6 +374,7 @@ class ThreadGroup {
    * \return true if the given thread was removed from this ThreadGroup
    */
   inline bool remove_thread(std::shared_ptr<Thread> thrd) {
+    std::cout << "ENTER remove_thread()" << std::endl;
     if (thrd) {
       WriteLock guard(m_);
       auto iter = threads_.find(thrd);
@@ -384,9 +385,11 @@ class ThreadGroup {
           std::cout << "remove_thread(): evEmpty_->signal();" << std::endl;
           evEmpty_->signal();
         }
+        std::cout << "EXIT (true) remove_thread()" << std::endl;
         return true;
       }
     }
+    std::cout << "EXIT (false) remove_thread()" << std::endl;
     return false;
   }
 
@@ -623,7 +626,7 @@ class BlockingQueueThread : public ThreadGroup::Thread {
 
 /*!
  * \brief Managed timer thread
- * \tparam Duration Durastion type (ie seconds, microseconds, etc)
+ * \tparam Duration Duration type (ie seconds, microseconds, etc)
  */
 template<typename Duration>
 class TimerThread : public ThreadGroup::Thread {
@@ -698,6 +701,7 @@ class TimerThread : public ThreadGroup::Thread {
         rc = on_timer_function();
       }
     }
+    std::cout << "Timer thread exiting..." << std::endl;
     return rc;
   }
 
