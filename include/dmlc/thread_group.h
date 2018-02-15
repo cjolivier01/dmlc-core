@@ -206,6 +206,15 @@ class ThreadGroup {
     }
 
     /*!
+     * \brief Make the thread joinable (by removing the auto_remove flag)
+     * \warning Care should be taken not to cause a race condition between this call
+     *          and parallel execution of this thread auto-removing itself
+     */
+    void make_joinable() {
+      auto_remove_ = true;
+    }
+
+    /*!
      * \brief Check whether the thread is joinable
      * \return true if the thread is joinable
      */
@@ -291,7 +300,7 @@ class ThreadGroup {
      * \brief Whether to automatically remove this thread's object from the ThreadGroup when the
      *        thread exists (perform its own cleanup)
      */
-    bool auto_remove_;
+    volatile bool auto_remove_;
   };
 
   /*!
@@ -401,6 +410,7 @@ class ThreadGroup {
   inline void join_all() {
     std::cout << "join_all(): threads_.size() = " << threads_.size() << std::endl;
     CHECK_EQ(!is_this_thread_in(), true);
+    std::unique_lock<std::mutex> lk(join_all_mtx_);
     std::unordered_set<std::shared_ptr<Thread>> working_set;
     {
       ReadLock guard(m_);
@@ -432,10 +442,15 @@ class ThreadGroup {
 
   /*!
    * \brief Call request_shutdown() on all threads in this ThreadGroup
+   * \param make_all_joinable If true, remove all auto_remove flags from child threads
    */
-  inline void request_shutdown_all() {
+  inline void request_shutdown_all(const bool make_all_joinable = true) {
+    std::unique_lock<std::mutex> lk(join_all_mtx_);
     ReadLock guard(m_);
-    for (auto& thread : threads_) {
+    for (auto &thread : threads_) {
+      if (make_all_joinable) {
+        thread->make_joinable();
+      }
       thread->request_shutdown();
     }
   }
@@ -499,6 +514,8 @@ class ThreadGroup {
  private:
   /*! \brief ThreadGroup synchronization mutex */
   mutable SharedMutex m_;
+  /*! \brief join_all/auto_remove synchronization mutex */
+  mutable std::mutex join_all_mtx_;
   /*! \brief Set of threads owned and managed by this ThreadGroup object */
   std::unordered_set<std::shared_ptr<Thread>> threads_;
   /*! \brief Manual event which is signaled when the thread group is empty */
