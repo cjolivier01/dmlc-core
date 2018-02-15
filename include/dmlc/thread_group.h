@@ -701,7 +701,7 @@ class TimerThread : public ThreadGroup::Thread {
         rc = on_timer_function();
       }
     }
-    std::cout << "Timer thread exiting..." << std::endl;
+    std::cout << "Timer thread exiting..." << std::endl << std::flush;
     return rc;
   }
 
