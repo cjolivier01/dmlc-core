@@ -360,6 +360,7 @@ class ThreadGroup {
       if (iter == name_to_thread_.end()) {
         name_to_thread_.emplace(std::make_pair(thrd->name(), thrd));
         CHECK_EQ(threads_.insert(thrd).second, true);
+        std::cout << "remove_thread(): evEmpty_->reset();" << std::endl;
         evEmpty_->reset();
         return true;
       }
@@ -380,6 +381,7 @@ class ThreadGroup {
         name_to_thread_.erase(thrd->name());
         threads_.erase(iter);
         if (threads_.empty()) {
+          std::cout << "remove_thread(): evEmpty_->signal();" << std::endl;
           evEmpty_->signal();
         }
         return true;
@@ -394,6 +396,7 @@ class ThreadGroup {
    *       wait for auto-remove threads to exit (waits for the ThreadGroup to become empty)
    */
   inline void join_all() {
+    std::cout << "join_all(): threads_.size() = " << threads_.size() << std::endl;
     CHECK_EQ(!is_this_thread_in(), true);
     std::unordered_set<std::shared_ptr<Thread>> working_set;
     {
@@ -407,6 +410,7 @@ class ThreadGroup {
     // Where possible, prefer to do a proper join rather than simply waiting for empty
     // (easier to troubleshoot)
     while (!working_set.empty()) {
+      std::cout << "join_all(): working_set.size() = " << working_set.size() << std::endl;
       std::shared_ptr<Thread> thrd;
       thrd = *working_set.begin();
       if (thrd->joinable()) {
@@ -417,7 +421,9 @@ class ThreadGroup {
       thrd.reset();
     }
     // Wait for auto-remove threads (if any) to complete
+    std::cout << "join_all(): START evEmpty_->wait();" << std::endl;
     evEmpty_->wait();
+    std::cout << "join_all(): END evEmpty_->wait();" << std::endl;
     CHECK_EQ(threads_.size(), 0);
   }
 
