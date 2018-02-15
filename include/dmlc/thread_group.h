@@ -211,7 +211,7 @@ class ThreadGroup {
      *          and parallel execution of this thread auto-removing itself
      */
     void make_joinable() {
-      auto_remove_ = true;
+      auto_remove_ = false;
     }
 
     /*!
